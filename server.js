@@ -1,47 +1,53 @@
 const express = require('express');
 const path = require('path');
-
 const app = express();
+const hbs = require('express-handlebars');
+
+//app.engine('.hbs', hbs());
+app.engine('hbs', hbs({ extname: 'hbs', layoutsDir: './layouts', defaultLayout: 'main' }));
+app.set('view engine', '.hbs');
+
 
 app.use(express.static(path.join(__dirname, '/public')));
 
 app.use((req, res, next) => {
-    res.show = (name) => {
-      res.sendFile(path.join(__dirname, `/views/${name}`));
+    res.show = (name, opt) => {
+//      res.sendFile(path.join(__dirname, `/views/${name}.html`));
+      res.render(name , opt);
     };
     next();
 });
 
-app.use('/user',(req, res, next) => {
-    res.show = (name) => {
-      res.sendFile(path.join(__dirname, `/views/forbidden.html`));
+app.use('/users', (req, res, next) => {
+    res.show = () => {
+//      res.sendFile(path.join(__dirname, `/views/forbidden.html`));
+      res.render('forbidden');
     };
     next();
 });
 
+app.get('/', (req, res) => {
+    res.show('index');
+});
+  
+app.get('/hello/:name', (req, res) => {
+    res.render('hello', { name: req.params.name });
+});
 
-  app.get('/', (req, res) => {
-    res.show('index.html');
-  });
+app.get('/about', (req, res) => {
+    res.show('about', { layout: 'dark'});
+});
+
+app.get('/user/settings', (req, res) => {
+    res.show('settings');
+});
   
-  app.get('/about', (req, res) => {
-    res.show('about.html');
-  });
-  
-  app.get('/contact', (req, res) => {
-    res.show('contact.html');
-  });
-  
-  app.get('/user/settings', (req, res) => {
-    res.show('settings.html');
-  });
-  
-  app.get('/user/panel', (req, res) => {
-    res.show('panel.html');
-  });
+app.get('/user/panel', (req, res) => {
+    res.show('panel');
+});
 
 app.use((req, res) => {
-    res.status(404).show('404.html');
+    res.status(404).show('404');
 })
 
 app.listen(8000, () => {
